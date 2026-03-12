@@ -5,9 +5,10 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -16,22 +17,33 @@ const Login = () => {
       return;
     }
 
-    const usersData = localStorage.getItem('banana_users');
-    const users = usersData ? JSON.parse(usersData) : {};
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      });
+      
+      const data = await response.json();
 
-    if (!users[username]) {
-      setError('User not found. Please register.');
-      return;
+      if (!response.ok) {
+        setError(data.message || 'Login failed. Please try again.');
+        return;
+      }
+
+      // Login successful, save token
+      localStorage.setItem('banana_auth_token', data.token);
+      localStorage.setItem('banana_username', data.user.username);
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      setError('Network error. Is the server running?');
+    } finally {
+      setLoading(false);
     }
-
-    if (users[username] !== password) {
-      setError('Wrong password. Please try again.');
-      return;
-    }
-
-    // Login successful
-    localStorage.setItem('banana_auth_user', username);
-    navigate('/');
   };
 
   return (
@@ -67,8 +79,8 @@ const Login = () => {
           
           {error && <div className="auth-error">{error}</div>}
           
-          <button type="submit" className="submit-btn auth-submit">
-            Login
+          <button type="submit" className="submit-btn auth-submit" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
         

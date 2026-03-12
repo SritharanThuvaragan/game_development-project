@@ -7,9 +7,10 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -24,22 +25,33 @@ const Register = () => {
       return;
     }
 
-    const usersData = localStorage.getItem('banana_users');
-    const users = usersData ? JSON.parse(usersData) : {};
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      });
+      
+      const data = await response.json();
 
-    if (users[username]) {
-      setError('User already exists. Please choose a different username.');
-      return;
+      if (!response.ok) {
+        setError(data.message || 'Registration failed. Please try again.');
+        return;
+      }
+
+      setSuccess('Registration successful! Redirecting to login...');
+      setTimeout(() => {
+          navigate('/login');
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      setError('Network error. Is the server running?');
+    } finally {
+      setLoading(false);
     }
-
-    // Register user
-    users[username] = password;
-    localStorage.setItem('banana_users', JSON.stringify(users));
-    
-    setSuccess('Registration successful! Redirecting to login...');
-    setTimeout(() => {
-        navigate('/login');
-    }, 1500);
   };
 
   return (
@@ -87,8 +99,8 @@ const Register = () => {
           {error && <div className="auth-error">{error}</div>}
           {success && <div className="auth-success">{success}</div>}
           
-          <button type="submit" className="submit-btn auth-submit">
-            Register
+          <button type="submit" className="submit-btn auth-submit" disabled={loading}>
+            {loading ? 'Registering...' : 'Register'}
           </button>
         </form>
         
