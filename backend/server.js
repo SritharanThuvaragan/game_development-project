@@ -10,6 +10,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Auth Routes
+app.use('/api/auth', require('./routes/auth'));
+
 // Example Banana API Route Placeholder
 // app.use('/api/game', require('./routes/gameRoutes'));
 
