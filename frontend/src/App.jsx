@@ -1,6 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
-function App() {
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('banana_auth_user');
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+// Main Game Component (extracted from original App)
+const Game = () => {
   const [questionUrl, setQuestionUrl] = useState('');
   const [solution, setSolution] = useState(null);
   const [score, setScore] = useState(0);
@@ -8,6 +21,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef(null);
+  const navigate = useNavigate();
 
   const fetchQuestion = async () => {
     setLoading(true);
@@ -44,6 +58,11 @@ function App() {
     } else {
       setFeedback('wrong');
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('banana_auth_user');
+    navigate('/login');
   };
 
   return (
@@ -99,10 +118,35 @@ function App() {
                 Next Question ➔
               </button>
             )}
+
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
           </>
         )}
       </div>
     </div>
+  );
+};
+
+// Root App Component wrapper routing
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <Game />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   );
 }
 
