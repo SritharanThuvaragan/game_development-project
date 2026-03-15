@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './Game.css';
 
 
@@ -8,22 +7,46 @@ import './Game.css';
 const Game = () => {
   const [questionUrl, setQuestionUrl] = useState('');
   const [solution, setSolution] = useState(null);
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState(0); // This will track totalScore
   const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong' | null
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState('');
+  
+  // Timer and Score System
+  const [seconds, setSeconds] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const [pointsEarned, setPointsEarned] = useState(null);
+
   const inputRef = useRef(null);
-  const navigate = useNavigate();
+
+  // Timer Effect
+  useEffect(() => {
+    let interval = null;
+    if (isActive) {
+      interval = setInterval(() => {
+        setSeconds(s => s + 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isActive]);
 
   const fetchQuestion = async () => {
     setLoading(true);
     setFeedback(null);
     setInputValue('');
+    setPointsEarned(null);
+    setSeconds(0);
+    setIsActive(false);
+
     try {
       const response = await fetch('https://marcconrad.com/uob/banana/api.php');
       const data = await response.json();
       setQuestionUrl(data.question);
       setSolution(data.solution);
+      setIsActive(true); // Start tracking time
+
     } catch (error) {
       console.error("Error fetching question:", error);
     } finally {
@@ -39,30 +62,57 @@ const Game = () => {
     fetchQuestion();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (inputValue === '') return;
     
     const numValue = parseInt(inputValue, 10);
     if (numValue === solution) {
+      setIsActive(false); // Stop the timer
       setFeedback('correct');
-      setScore(s => s + 1);
+      
+      let points = 50;
+      if (seconds <= 10) points = 100;
+      else if (seconds <= 20) points = 80;
+      else if (seconds <= 30) points = 70;
+      else if (seconds <= 40) points = 60;
+      
+      setPointsEarned(points);
+      
+      // Send to backend
+      const username = localStorage.getItem('banana_username');
+      if (username) {
+        try {
+          const res = await fetch('http://localhost:5000/api/scores/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, pointsToAdd: points })
+          });
+          const data = await res.json();
+          if (data.totalScore !== undefined) {
+             setScore(data.totalScore);
+          } else {
+             setScore(s => s + points);
+          }
+        } catch (error) {
+           console.error('Error updating score', error);
+           setScore(s => s + points);
+        }
+      } else {
+         setScore(s => s + points);
+      }
     } else {
       setFeedback('wrong');
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('banana_auth_token');
-    localStorage.removeItem('banana_username');
-    navigate('/login');
   };
 
   return (
     <div className="app-container">
       <div className="header">
         <h1 className="title">Banana Math</h1>
-        <div className="score">Score: <span className="score-value">{score}</span></div>
+        <div className="score-area">
+          <div className="score">Total Score: <span className="score-value">{score}</span></div>
+        </div>
       </div>
 
       <div className="game-card">
@@ -70,6 +120,9 @@ const Game = () => {
           <div className="loading-spinner"></div>
         ) : (
           <>
+            <div className="timer" style={{ textAlign: 'center', fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold' }}>
+              Time: {seconds}s
+            </div>
             <div className="puzzle-image-container">
               <img src={questionUrl} alt="Math Puzzle" className="puzzle-image" />
             </div>
@@ -102,7 +155,9 @@ const Game = () => {
 
             {feedback && (
               <div className={`feedback ${feedback}`}>
-                {feedback === 'correct' ? 'Correct! 🎉' : 'Wrong! Try again. ❌'}
+                {feedback === 'correct' ? (
+                   <>Correct! 🎉 <br/><small>Time: {seconds}s (+{pointsEarned} pts)</small></>
+                ) : 'Wrong! Try again. ❌'}
               </div>
             )}
 
@@ -111,10 +166,6 @@ const Game = () => {
                 Next Question ➔
               </button>
             )}
-
-            <button onClick={handleLogout} className="logout-btn">
-              Logout
-            </button>
           </>
         )}
       </div>
