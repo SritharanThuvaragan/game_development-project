@@ -13,6 +13,9 @@ app.use(express.json());
 // Auth Routes
 app.use('/api/auth', require('./routes/auth'));
 
+// Score and Leaderboard Routes
+app.use('/api/scores', require('./routes/scoreRoutes'));
+
 // Example Banana API Route Placeholder
 // app.use('/api/game', require('./routes/gameRoutes'));
 

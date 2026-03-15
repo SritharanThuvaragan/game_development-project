@@ -1,1 +1,28 @@
 /* Styles specifically for the Game component */
+
+.score-area {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.leaderboard-btn {
+  background-color: #ffcc00;
+  color: #333;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.leaderboard-btn:hover {
+  transform: scale(1.05);
+}
+
+.timer {
+  color: #ff4757;
+}
+
+/* Include existing styles below if any, but since the file was empty except for the comment, this is all for now */
