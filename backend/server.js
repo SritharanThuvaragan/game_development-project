@@ -16,11 +16,14 @@ app.use('/api/auth', require('./routes/auth'));
 // Score and Leaderboard Routes
 app.use('/api/scores', require('./routes/scoreRoutes'));
 
+// Profile and History Routes
+app.use('/api/profile', require('./routes/profileRoutes'));
+
 // Example Banana API Route Placeholder
 // app.use('/api/game', require('./routes/gameRoutes'));
 
 app.get('/', (req, res) => {
-    res.send('Banana Game API is running');
+    res.send('Banana Blast API is running');
 });
 
 const PORT = process.env.PORT || 5000;
