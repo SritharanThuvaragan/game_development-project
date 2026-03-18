@@ -47,13 +47,15 @@ const Login = () => {
   };
 
   return (
-    <div className="app-container">
-      <div className="header">
-        <h1 className="title">Welcome Back</h1>
-        <div className="score">Login to play Banana Math</div>
-      </div>
-      
-      <div className="game-card auth-card">
+    <div className="page-content">
+      <div className="auth-card">
+        <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+          <div style={{ fontSize: '0.6rem', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '4px', marginBottom: '6px' }}>◆ Banana Blast HQ ◆</div>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: '900', background: 'linear-gradient(135deg, var(--primary), #fff)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Welcome Back</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '4px' }}>
+            <i className="fa-solid fa-lock" style={{ marginRight: '6px' }} />Login to continue your mission
+          </p>
+        </div>
         <form onSubmit={handleLogin} className="auth-form">
           <div className="input-group">
             <label>Username</label>

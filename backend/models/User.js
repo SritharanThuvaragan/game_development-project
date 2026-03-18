@@ -16,6 +16,15 @@ const UserSchema = new mongoose.Schema({
   totalScore: {
     type: Number,
     default: 0
+  },
+  bio: {
+    type: String,
+    maxLength: 200,
+    default: ""
+  },
+  avatarColor: {
+    type: String,
+    default: "#f7b924"
   }
 }, { timestamps: true });
 

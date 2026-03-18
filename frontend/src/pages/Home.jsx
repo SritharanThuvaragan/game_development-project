@@ -1,64 +1,86 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../pages/Game.css'; // Reusing base styles
+import { useSound } from '../context/SoundContext';
 
 const Home = () => {
   const navigate = useNavigate();
   const [difficulty, setDifficulty] = useState('medium');
+  const { playSound, sounds } = useSound();
 
   const difficulties = [
-    { id: 'easy', label: 'Easy', color: '#4caf50' },
-    { id: 'medium', label: 'Medium', color: '#ffcc00' },
-    { id: 'hard', label: 'Hard', color: '#f44336' }
+    { id: 'easy', label: 'EASY', icon: 'fa-shield-halved', color: 'var(--secondary)', desc: 'Novice' },
+    { id: 'medium', label: 'MEDIUM', icon: 'fa-crosshairs', color: 'var(--primary)', desc: 'Agent' },
+    { id: 'hard', label: 'HARD', icon: 'fa-skull-crossbones', color: 'var(--error)', desc: 'Elite' },
   ];
 
-  return (
-    <div className="game-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '40px' }}>
-      <h2 style={{ fontSize: '2.5rem', marginBottom: '10px', color: '#ffcc00', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>Banana Math!</h2>
-      <p style={{ marginBottom: '30px', fontSize: '1.2rem', textAlign: 'center', color: '#fff' }}>
-        Test your math skills! Choose your difficulty and solve puzzles to earn points.
-      </p>
+  const start = () => { playSound(sounds.start); navigate('/game', { state: { difficulty } }); };
 
-      <div className="difficulty-container">
-        <h3 style={{ textAlign: 'center', marginBottom: '15px', color: '#eee' }}>Select Difficulty:</h3>
-        <div className="difficulty-options">
-          {difficulties.map((diff) => (
+  return (
+    <div className="page-content">
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        gap: '18px', width: '100%', maxWidth: '480px',
+        animation: 'fadeIn 0.45s ease',
+      }}>
+
+        {/* Brand */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.65rem', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '4px', marginBottom: '4px' }}>
+            ◆ Banana Blast HQ ◆
+          </div>
+          <h1 style={{
+            fontSize: '2.4rem', fontWeight: '900', lineHeight: 1.1,
+            background: 'linear-gradient(135deg, var(--primary), #fff 50%, var(--secondary))',
+            backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            backgroundSize: '200% auto', animation: 'shine 3s linear infinite',
+          }}>
+            BANANA BLAST
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '5px', lineHeight: '1.5' }}>
+            Elite decryption system online. Select clearance level.
+          </p>
+        </div>
+
+        {/* Difficulty */}
+        <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+          {difficulties.map(d => (
             <button
-              key={diff.id}
-              onClick={() => setDifficulty(diff.id)}
-              className={`difficulty-btn ${diff.id} ${difficulty === diff.id ? 'active' : ''}`}
+              key={d.id}
+              onClick={() => { setDifficulty(d.id); playSound(sounds.click); }}
+              className={`difficulty-btn ${d.id} ${difficulty === d.id ? 'active' : ''}`}
+              style={{ padding: '12px 6px' }}
             >
-              {diff.label}
+              <i className={`fa-solid ${d.icon}`} style={{ fontSize: '1.1rem' }} />
+              <span style={{ fontWeight: '900', fontSize: '0.75rem', letterSpacing: '1px' }}>{d.label}</span>
+              <span style={{ fontSize: '0.58rem', opacity: 0.7, textTransform: 'uppercase' }}>{d.desc}</span>
             </button>
           ))}
         </div>
-      </div>
 
-      <button 
-        onClick={() => navigate('/game', { state: { difficulty } })} 
-        style={{
-          padding: '20px 60px',
-          fontSize: '1.5rem',
-          backgroundColor: '#ffcc00',
-          color: '#333',
-          border: 'none',
-          borderRadius: '50px',
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          boxShadow: '0 6px 12px rgba(0,0,0,0.4)',
-          transition: 'transform 0.2s, box-shadow 0.2s',
-        }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)';
-          e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.5)';
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.4)';
-        }}
-      >
-        Play Game
-      </button>
+        {/* Start */}
+        <button
+          onClick={start}
+          className="submit-btn"
+          style={{ width: '100%', height: '54px', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+        >
+          <i className="fa-solid fa-rocket" />
+          INITIATE MISSION
+        </button>
+
+        {/* Footer icons */}
+        <div style={{ display: 'flex', gap: '2rem', opacity: 0.5 }}>
+          {[
+            { icon: 'fa-chess-knight', label: 'Infiltration', color: 'var(--primary)' },
+            { icon: 'fa-microchip', label: 'Decryption', color: 'var(--secondary)' },
+            { icon: 'fa-star', label: 'XP Rewards', color: 'var(--accent)' },
+          ].map(s => (
+            <div key={s.label} style={{ textAlign: 'center' }}>
+              <div style={{ color: s.color }}><i className={`fa-solid ${s.icon}`} /></div>
+              <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '3px' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
