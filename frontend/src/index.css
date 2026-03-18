@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
 :root {
-  --primary: #FFB800;
-  --secondary: #8B5CF6;
-  --success: #10B981;
-  --error: #EF4444;
-  --background: #0f172a;
-  --surface: rgba(30, 41, 59, 0.7);
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
+  --primary: #f7b924; /* Bright banana yellow */
+  --secondary: #4b7244; /* Tropical green */
+  --success: #2d5a27; /* Darker green */
+  --error: #e65100; /* Dark orange/red */
+  --background: #fdfaf2; /* Creamy off-white */
+  --surface: rgba(255, 255, 255, 0.85); /* Semi-transparent white to blur background */
+  --text: #1a3314; /* Dark green text */
+  --text-muted: #5b7056; /* Muted green text */
 }
 
 * {
@@ -23,11 +23,19 @@ body {
   color: var(--text);
   min-height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  background: radial-gradient(circle at top left, rgba(139, 92, 246, 0.15), transparent 40%),
-              radial-gradient(circle at bottom right, rgba(255, 184, 0, 0.1), transparent 40%),
-              var(--background);
+  flex-direction: column;
+  background-image: url('/banana-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
 }
 
 .app-container {
@@ -38,6 +46,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 2rem;
+  margin: auto;
 }
 
 .header {
@@ -52,7 +61,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.5rem;
-  text-shadow: 0 4px 12px rgba(255, 184, 0, 0.2);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .score {
@@ -78,13 +87,13 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(45, 90, 39, 0.15);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .game-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 30px 60px -12px rgba(45, 90, 39, 0.25);
 }
 
 .puzzle-image-container {
@@ -114,8 +123,8 @@ body {
   width: 120px;
   height: 90px;
   border-radius: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(75, 114, 68, 0.3);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
   font-size: 3.5rem;
   font-weight: 800;
@@ -171,15 +180,15 @@ body {
 }
 
 .next-btn {
-  background: linear-gradient(135deg, var(--secondary), #7C3AED);
+  background: linear-gradient(135deg, var(--secondary), var(--success));
   color: white;
   width: 100%;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 15px rgba(45, 90, 39, 0.4);
 }
 
 .next-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+  box-shadow: 0 6px 20px rgba(45, 90, 39, 0.6);
 }
 
 .feedback {
@@ -208,7 +217,7 @@ body {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
+  border: 4px solid rgba(75, 114, 68, 0.2);
   border-left-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -260,8 +269,8 @@ body {
   width: 100%;
   padding: 1rem;
   border-radius: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(75, 114, 68, 0.3);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
   font-size: 1rem;
   font-weight: 400;
@@ -326,7 +335,7 @@ body {
 .logout-btn {
   background: transparent;
   color: var(--text-muted);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(75, 114, 68, 0.3);
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-family: inherit;
