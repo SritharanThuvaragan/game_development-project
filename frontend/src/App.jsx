@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
@@ -17,11 +17,10 @@ const ProtectedRoute = ({ children }) => {
 };
 
 // Layout with Navbar for protected pages
-import { Outlet } from 'react-router-dom';
 const ProtectedLayout = () => {
   return (
     <ProtectedRoute>
-      <div className="app-container" style={{ display: 'block', paddingTop: '80px', maxWidth: '100%', paddingLeft: 0, paddingRight: 0 }}>
+      <div className="app-container" style={{ display: 'block', paddingTop: '80px', maxWidth: '100%', margin: 0, paddingLeft: 0, paddingRight: 0 }}>
         <Navbar />
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px' }}>
           <Outlet />
