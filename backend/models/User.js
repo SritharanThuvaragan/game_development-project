@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: false,
     minlength: 6
   },
   totalScore: {
@@ -25,6 +25,22 @@ const UserSchema = new mongoose.Schema({
   avatarColor: {
     type: String,
     default: "#f7b924"
+  },
+  email: {
+    type: String,
+    unique: true,
+    sparse: true, // Allows null/undefined to be ignored by unique index
+    trim: true,
+  },
+  isTwoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorCode: {
+    type: String
+  },
+  twoFactorExpires: {
+    type: Date
   }
 }, { timestamps: true });
 

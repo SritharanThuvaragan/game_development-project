@@ -1,5 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
+import clickSound from '../assets/sounds/click.mp3';
+import wrongSound from '../assets/sounds/wrong.mp3';
+import timerSound from '../assets/sounds/timer.mp3';
+import levelUpSound from '../assets/sounds/levelUp.mp3';
+import bgMusicSound from '../assets/sounds/bgMusic.mp3';
+import tickSound from '../assets/sounds/tick.mp3';
+
 const SoundContext = createContext();
 
 export const SoundProvider = ({ children }) => {
@@ -12,14 +19,14 @@ export const SoundProvider = ({ children }) => {
   const bgMusicRef = useRef(null);
 
   const sounds = {
-    click: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
+    click: clickSound,
     correct: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
-    wrong: 'https://assets.mixkit.co/active_storage/sfx/2959/2959-preview.mp3',
-    timer: 'https://assets.mixkit.co/active_storage/sfx/2501/2501-preview.mp3',
+    wrong: wrongSound,
+    timer: timerSound,
     start: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
-    levelUp: 'https://assets.mixkit.co/active_storage/sfx/1362/1362-preview.mp3',
-    bgMusic: 'https://assets.mixkit.co/active_storage/sfx/2900/2900-preview.mp3',
-    tick: 'https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3',
+    levelUp: levelUpSound,
+    bgMusic: bgMusicSound,
+    tick: tickSound,
   };
 
   // Persist settings
@@ -31,18 +38,42 @@ export const SoundProvider = ({ children }) => {
 
   // Background music control
   useEffect(() => {
-    if (isMusicEnabled && !isMuted && !isMusicTemporarilyDisabled) {
-      if (!bgMusicRef.current) {
-        bgMusicRef.current = new Audio(sounds.bgMusic);
-        bgMusicRef.current.loop = true;
+    let interactionProcessed = false;
+
+    const playAudio = () => {
+      if (isMusicEnabled && !isMuted && !isMusicTemporarilyDisabled) {
+        if (!bgMusicRef.current) {
+          bgMusicRef.current = new Audio(sounds.bgMusic);
+          bgMusicRef.current.loop = true;
+        }
+        bgMusicRef.current.volume = musicVolume * masterVolume;
+        bgMusicRef.current.play().catch(() => {
+          // Autoplay might be blocked by browser
+        });
+      } else {
+        if (bgMusicRef.current) {
+          bgMusicRef.current.pause();
+        }
       }
-      bgMusicRef.current.volume = musicVolume * masterVolume;
-      bgMusicRef.current.play().catch(() => {});
-    } else {
-      if (bgMusicRef.current) {
-        bgMusicRef.current.pause();
+    };
+
+    playAudio();
+
+    // Event listener to resume audio upon first user interaction if blocked
+    const handleInteraction = () => {
+      if (!interactionProcessed && isMusicEnabled && !isMuted && !isMusicTemporarilyDisabled && bgMusicRef.current && bgMusicRef.current.paused) {
+        bgMusicRef.current.play().catch(() => {});
+        interactionProcessed = true;
       }
-    }
+    };
+
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('keydown', handleInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('keydown', handleInteraction);
+    };
   }, [isMusicEnabled, isMuted, musicVolume, masterVolume, isMusicTemporarilyDisabled]);
 
   // Update bg music volume live
