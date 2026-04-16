@@ -42,6 +42,7 @@ const Game = () => {
   const [questionNum,  setQuestionNum]  = useState(1);
   const [streak,       setStreak]       = useState(0);
   const [history,      setHistory]      = useState([]);    // [{pts, time, result}]
+  const [showQuitModal, setShowQuitModal] = useState(false);
 
   const inputRef = useRef(null);
   const timeLimit = config.time;
@@ -59,7 +60,7 @@ const Game = () => {
   /* ─── Timer ─── */
   useEffect(() => {
     let id = null;
-    if (isActive) {
+    if (isActive && !showQuitModal) {
       id = setInterval(() => {
         setSeconds(s => {
           if (s + 1 >= timeLimit) {
@@ -94,7 +95,7 @@ const Game = () => {
       }, 1000);
     }
     return () => clearInterval(id);
-  }, [isActive, timeLimit, playSound, sounds]);
+  }, [isActive, timeLimit, playSound, sounds, showQuitModal]);
 
   /* ─── Fetch question ─── */
   const fetchQuestion = async () => {
@@ -197,6 +198,11 @@ const Game = () => {
   const handleNext = () => {
     setQuestionNum(n => n + 1);
     fetchQuestion();
+  };
+
+  const handleQuit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setShowQuitModal(true);
   };
 
   /* ─── Render ─── */
@@ -409,15 +415,26 @@ const Game = () => {
               autoFocus
             />
             {(!feedback || feedback === 'wrong') && !isTimeOver && (
-              <button
-                type="submit"
-                className="submit-btn"
-                disabled={inputValue === '' || loading}
-                style={{ width: '100%', height: '52px', fontSize: '1rem', gap: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <i className="fa-solid fa-bolt" />
-                ENGAGE
-              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={inputValue === '' || loading}
+                  style={{ flex: 1 }}
+                >
+                  <i className="fa-solid fa-bolt" />
+                  ENGAGE
+                </button>
+                <button
+                  type="button"
+                  onClick={handleQuit}
+                  className="cancel-btn"
+                  style={{ flex: 1 }}
+                >
+                  <i className="fa-solid fa-times" />
+                  CANCEL
+                </button>
+              </div>
             )}
           </form>
 
@@ -439,22 +456,30 @@ const Game = () => {
 
           {/* Next Mission */}
           {feedback === 'correct' && (
-            <button onClick={handleNext} className="next-btn" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <i className="fa-solid fa-arrow-right" />
-              NEXT MISSION
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button onClick={handleNext} className="next-btn" style={{ width: '100%' }}>
+                <i className="fa-solid fa-arrow-right" />
+                NEXT MISSION
+              </button>
+              <button onClick={handleQuit} className="cancel-btn" style={{ width: '100%' }}>
+                <i className="fa-solid fa-times" />
+                CANCEL
+              </button>
+            </div>
           )}
 
           {/* Time Over */}
           {isTimeOver && (
-            <button onClick={fetchQuestion} className="next-btn" style={{
-              width: '100%', background: 'rgba(255,71,87,0.15)',
-              borderColor: 'var(--error)', color: 'var(--error)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-            }}>
-              <i className="fa-solid fa-rotate-right" />
-              ABORT & RETRY
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={fetchQuestion} className="next-btn" style={{ flex: 1, background: 'rgba(255,165,0,0.15)', borderColor: 'var(--warning)', color: 'var(--warning)' }}>
+                <i className="fa-solid fa-rotate-right" />
+                RETRY
+              </button>
+              <button onClick={handleQuit} className="cancel-btn" style={{ flex: 1 }}>
+                <i className="fa-solid fa-times" />
+                CANCEL
+              </button>
+            </div>
           )}
         </div>
 
@@ -517,7 +542,7 @@ const Game = () => {
       </div>{/* end right panel */}
 
       {/* Time-over modal */}
-      {isTimeOver && (
+      {isTimeOver && !showQuitModal && (
         <div className="modal-overlay" style={{ zIndex: 999 }}>
           <div className="time-over-modal">
             <i className="fa-solid fa-skull-crossbones" style={{ fontSize: '3rem', color: 'var(--error)', marginBottom: '16px' }} />
@@ -527,9 +552,37 @@ const Game = () => {
             <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
               Mission compromised. The encryption has reset.
             </p>
-            <button onClick={fetchQuestion} className="next-btn" style={{ margin: 0 }}>
-              <i className="fa-solid fa-rotate-right" style={{ marginRight: '8px' }} />RETRY MISSION
-            </button>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', width: '100%' }}>
+              <button onClick={fetchQuestion} className="next-btn">
+                <i className="fa-solid fa-rotate-right" />RETRY MISSION
+              </button>
+              <button onClick={handleQuit} className="cancel-btn">
+                <i className="fa-solid fa-times" />CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quit confirmation modal */}
+      {showQuitModal && (
+        <div className="modal-overlay" style={{ zIndex: 1000 }}>
+          <div className="time-over-modal">
+            <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '3rem', color: '#ffaa00', marginBottom: '16px' }} />
+            <h2 style={{ fontSize: '2rem', color: '#fff', fontWeight: '900', marginBottom: '8px' }}>
+              ABORT MISSION?
+            </h2>
+            <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
+              Are you sure you want to quit? Your current progress will be lost.
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', width: '100%' }}>
+              <button onClick={(e) => { e.preventDefault(); setShowQuitModal(false); setTimeout(() => inputRef.current?.focus(), 100); }} className="next-btn">
+                <i className="fa-solid fa-play" />RESUME
+              </button>
+              <button onClick={(e) => { e.preventDefault(); navigate('/'); }} className="cancel-btn">
+                <i className="fa-solid fa-power-off" />QUIT
+              </button>
+            </div>
           </div>
         </div>
       )}
