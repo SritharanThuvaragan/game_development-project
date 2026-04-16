@@ -161,4 +161,71 @@ router.post('/verify-2fa', async (req, res) => {
   }
 });
 
+// Forgot Password - Send OTP
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { username } = req.body;
+    
+    if (!username) {
+      return res.status(400).json({ message: 'Please provide a username' });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    user.twoFactorCode = code;
+    user.twoFactorExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save();
+
+    await sendEmail({
+      to: user.email,
+      subject: 'Banana Quiz Game - Password Reset Code',
+      text: `Your password reset code is: ${code}\n\nIt will expire in 10 minutes. If you did not request this, please ignore this email.`
+    });
+
+    res.json({ message: 'Password reset code sent to email' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error during forgot password' });
+  }
+});
+
+// Reset Password - Verify OTP and update password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { username, code, newPassword } = req.body;
+    
+    if (!username || !code || !newPassword) {
+      return res.status(400).json({ message: 'Please provide username, code, and new password' });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.twoFactorCode !== code || user.twoFactorExpires < Date.now()) {
+      return res.status(400).json({ message: 'Invalid or expired reset code' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    user.twoFactorCode = undefined;
+    user.twoFactorExpires = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error during password reset' });
+  }
+});
+
 module.exports = router;

@@ -10,8 +10,46 @@ const Login = () => {
   // 2FA state
   const [requires2FA, setRequires2FA] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
+  
+  // Forgot Password Prompt state
+  const [requiresForgotPassword, setRequiresForgotPassword] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleForgotPasswordClick = () => {
+    setError('');
+    if (!username) {
+      setError('invalid username');
+      return;
+    }
+    setRequiresForgotPassword(true);
+  };
+
+  const handleConfirmSendOTP = async (e) => {
+    e?.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
+      
+      if (!response.ok) {
+        setError('invalid username');
+        return;
+      }
+      
+      navigate('/forgot-password', { state: { username } });
+    } catch (err) {
+      console.error(err);
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -103,7 +141,7 @@ const Login = () => {
           </p>
         </div>
 
-        {!requires2FA ? (
+        {!requires2FA && !requiresForgotPassword && (
           <form onSubmit={handleLogin} className="auth-form">
             <div className="input-group">
               <label>Username</label>
@@ -125,6 +163,16 @@ const Login = () => {
                 className="auth-input"
                 placeholder="Enter your password"
               />
+              <div style={{ textAlign: 'right', marginTop: '5px' }}>
+                <button 
+                  type="button" 
+                  onClick={handleForgotPasswordClick} 
+                  disabled={loading}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.8rem', cursor: 'pointer', padding: 0 }}
+                >
+                  Forgot Password?
+                </button>
+              </div>
             </div>
             
             {error && <div className="auth-error">{error}</div>}
@@ -133,7 +181,9 @@ const Login = () => {
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
-        ) : (
+        )}
+
+        {requires2FA && (
           <form onSubmit={handleVerify2FA} className="auth-form">
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px', textAlign: 'center' }}>
               We've sent a 6-digit code to your email. Please enter it below.
@@ -157,8 +207,30 @@ const Login = () => {
             </button>
           </form>
         )}
+
+        {requiresForgotPassword && (
+          <form onSubmit={handleConfirmSendOTP} className="auth-form">
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px', textAlign: 'center' }}>
+              Are you sure you want to request a password reset for <strong>{username}</strong>?
+            </p>
+            {error && <div className="auth-error">{error}</div>}
+            
+            <button type="submit" className="submit-btn auth-submit" disabled={loading} style={{ marginBottom: '10px' }}>
+              {loading ? 'Sending OTP...' : 'Send OTP'}
+            </button>
+            <button 
+              type="button" 
+              className="submit-btn auth-submit" 
+              onClick={() => setRequiresForgotPassword(false)}
+              disabled={loading}
+              style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)' }}
+            >
+              Cancel
+            </button>
+          </form>
+        )}
         
-        {!requires2FA && (
+        {!requires2FA && !requiresForgotPassword && (
           <div className="auth-link">
             Don't have an account? <Link to="/register">Register here</Link>
           </div>
